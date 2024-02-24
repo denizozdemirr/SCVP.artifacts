@@ -34,6 +34,8 @@
 #include <systemc.h>
 #include <unistd.h>
 
+// THIS SIMULATION DOESN'T STOOOOOOPPPP 
+// !!!!!!!!!!!!!!!!!!!!!!!
 SC_MODULE(rslatch)
 {
     sc_in<bool> S;

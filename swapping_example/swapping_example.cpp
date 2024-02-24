@@ -49,7 +49,7 @@ SC_MODULE(toplevel)
     sc_event startMethod2;
     sc_event startThread1;
 
-    sc_time currentTime;
+    sc_time currentTime; // bunları yine yazmak lazım herhalde çünkü simulation ve zaman için gerekli gibi
     unsigned long long currentDelta;
 
     SC_CTOR(toplevel) : A("A"), B("B")
@@ -80,7 +80,7 @@ SC_MODULE(toplevel)
         currentDelta = sc_delta_count();
     }
 
-    void waitAndPrint(sc_time delay)
+    void waitAndPrint(sc_time delay) //bunun kullanım nedeni aşağıda yazıyor
     {
         wait(delay);
         sc_time time = sc_time_stamp();

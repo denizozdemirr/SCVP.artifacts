@@ -32,38 +32,43 @@
  */
 
 #include <systemc.h>
-
-SC_MODULE(NOT)
+//we said we HAVE A MODULE CALLED NOT, we will use this module later for more than one not chain
+// it is useful if we will use more than one not, combine them etc.
+SC_MODULE(NOT) // we have 1) NOT module(SC_MODULE named NOT)
 {
-    public:
-    sc_in<bool> in;
+    public: //have to specifiy public and private things
+    sc_in<bool> in; //define the signals inside public
     sc_out<bool> out;
 
-    SC_CTOR(NOT) : in("in"), out("out")
+    SC_CTOR(NOT) : in("in"), out("out") //after SC_MODULE, and inside rhis, we have SC_CTOR (aynı name li)
+    // and we say "in" is an in port, out is an out port falan
     {
-        SC_METHOD(process);
+        SC_METHOD(process); // inside this SC_CTOR, we have a SC_METHOD called process,
+        // we will define this process as void outside this SC_TOR, but again inside this SC_MODULE
     }
 
-    void process()
-    {
-       out.write(!in.read());
+    void process() // just specify what this process should do
+    { 
+       out.write(!in.read()); // it will read() in, negate this value !, write() it to out
     }
 };
 
-SC_MODULE(not_chain)
+SC_MODULE(not_chain) // another module called not_chain, where we'll use 
 {
-    sc_in<bool> A;
+    sc_in<bool> A; //inide this module, define in and out
     sc_out<bool> Z;
 
-    NOT not1, not2, not3;
+    NOT not1, not2, not3; //instantiate the not instances, how many we need
 
-    sc_signal<bool> h1,h2;
+    sc_signal<bool> h1,h2; // interconnect signals, they connect the nots 
 
-    SC_CTOR(not_chain):
+    SC_CTOR(not_chain): //constructor, define every signal, interconnect, port
         A("A"), Z("Z"),
         not1("not1"), not2("not2"), not3("not3"),
         h1("h1"), h2("h2")
     {
+        // THEN, BIND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //~~~~~~~~~~~~~~~~
         //        h1    h2
         // A--NOT1--NOT2--NOT3--Z
         not1.in.bind(A);
@@ -77,6 +82,7 @@ SC_MODULE(not_chain)
     }
 };
 
+// BURADA hep gerekli zaten
 int sc_main (int __attribute__((unused)) sc_argc,
              char __attribute__((unused)) *sc_argv[])
 {

@@ -37,15 +37,20 @@
 
 using namespace std;
 
-class exampleInitiator: sc_module, tlm::tlm_bw_transport_if<>
-{
+class exampleInitiator: sc_module, tlm::tlm_bw_transport_if<> // INITIATOR CLASS !!!
+{ 
     public:
-    tlm::tlm_initiator_socket<> iSocket;
+    tlm::tlm_initiator_socket<> iSocket; //its not a port but a SOCKET NOW
     SC_CTOR(exampleInitiator) : iSocket("iSocket")
     {
-        iSocket.bind(*this);
+        // bind the socket to the initiator module itself
+        iSocket.bind(*this); //this points to the object of the class
         SC_THREAD(process);
     }
+
+    // the functions below, we HAVE TO implement them because we are doing an
+    // initiator, so for this interface, even if you dont use them, HAVE TO IMPLEMENT THEM
+    // invalidate_direct_mem_ptr these things
 
     // Dummy method:
     void invalidate_direct_mem_ptr(sc_dt::uint64 start_range,
@@ -69,23 +74,27 @@ class exampleInitiator: sc_module, tlm::tlm_bw_transport_if<>
     {
         // Write to memory1:
         for (int i = 0; i < 4; i++) {
-            tlm::tlm_generic_payload trans;
+            tlm::tlm_generic_payload trans; //our transaction object 
             unsigned char data = rand();
-            trans.set_address(i);
-            trans.set_data_length(1);
-            trans.set_streaming_width(1);
-            trans.set_command(tlm::TLM_WRITE_COMMAND);
-            trans.set_data_ptr(&data);
+            //HAVE TO SET THE FOLLOWING
+            trans.set_address(i); //set the address to i like in the previous example
+            trans.set_data_length(1); //set data length
+            trans.set_streaming_width(1); //set the width
+            trans.set_command(tlm::TLM_WRITE_COMMAND); //indicate which command it is 
+            trans.set_data_ptr(&data); //to get the reference
             trans.set_response_status( tlm::TLM_INCOMPLETE_RESPONSE );
             sc_time delay = sc_time(0, SC_NS);
+
             iSocket->b_transport(trans, delay);
+            // can put here wait(delay)
+
             if ( trans.is_response_error() )
               SC_REPORT_FATAL(name(), "Response error from b_transport");
-            wait(delay);
+            wait(delay); //SOMETIMES, put this in the initiator meaning : look up
             std::cout << "@" << sc_time_stamp() << " Write Data: "
                       << (unsigned int)data << std::endl;
         }
-        // Write to memory1:
+        // Write to memory2:
         for (int i = 512; i < 515; i++) {
             tlm::tlm_generic_payload trans;
             unsigned char data = rand();
@@ -144,7 +153,7 @@ class exampleInitiator: sc_module, tlm::tlm_bw_transport_if<>
     }
 };
 
-class exampleTarget : sc_module, tlm::tlm_fw_transport_if<>
+class exampleTarget : sc_module, tlm::tlm_fw_transport_if<> //TARGET CLASS !!!
 {
     private:
     unsigned char mem[512];
@@ -154,10 +163,11 @@ class exampleTarget : sc_module, tlm::tlm_fw_transport_if<>
 
     SC_CTOR(exampleTarget) : tSocket("tSocket")
     {
-        tSocket.bind(*this);
+        tSocket.bind(*this); //bind the socket to the target module
     }
 
-    void b_transport(tlm::tlm_generic_payload &trans, sc_time &delay)
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    void b_transport(tlm::tlm_generic_payload &trans, sc_time &delay) // MOST IMPORTANT
     {
         if (trans.get_address() >= 512)
         {
@@ -176,15 +186,18 @@ class exampleTarget : sc_module, tlm::tlm_fw_transport_if<>
             memcpy(&mem[trans.get_address()], // destination
                    trans.get_data_ptr(),      // source
                    trans.get_data_length());  // size
+            //delay = delay + sc_time(20, SC_NS);
         }
         else // (trans.get_command() == tlm::TLM_READ_COMMAND)
         {
             memcpy(trans.get_data_ptr(),      // destination
                    &mem[trans.get_address()], // source
                    trans.get_data_length());  // size
+            //delay = delay + sc_time(10, SC_NS);
         }
 
-        delay = delay + sc_time(40, SC_NS);
+        delay = delay + sc_time(40, SC_NS); //delay
+        //BUT, if for example WRITE needs more time than READ: look up
 
         trans.set_response_status( tlm::TLM_OK_RESPONSE );
     }

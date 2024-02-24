@@ -33,52 +33,56 @@
 
 #include <systemc.h>
 
-SC_MODULE(rslatch)
+SC_MODULE(rslatch) //  1)) MODULE for SR LATCH
 {
     sc_in<bool> S;
     sc_in<bool> R;
     sc_out<bool> Q;
     sc_out<bool> N;
 
-    SC_CTOR(rslatch) : S("S"), R("R"), Q("Q"), N("N")
+    SC_CTOR(rslatch) : S("S"), R("R"), Q("Q"), N("N") // 2)) inside the MODULE => CONSTRUCTOR
     {
-        SC_METHOD(process);
+        SC_METHOD(process);           // 3)) inside SC_CTOR => SC_METHOD
         sensitive << S << R << Q << N;
     }
 
-    void process()
+    void process()                    // 4) after SC_METHOD, inside SC_CTOR => PROCESS
+                                      // this is where we define the functionality, what our method should do.
     {
+        // what it should do? We have 2 equations for SR latch, sadece onları yazdık burada
         Q.write(!(R.read()||N.read())); // Nor Gate
         N.write(!(S.read()||Q.read())); // Nor Gate
     }
 };
-
-SC_MODULE(toplevel)
+// 1)SC_MODULE,  2)inside this module= SC_CTOR, 3)inside this SC_CTOR= either SC_THREAD or SC_METHOD
+// 4)inside this constructor = tanımladığın functionların void ları. 5) int sc_main de de instantiation ları
+SC_MODULE(toplevel) //!!!!!! MODULE FOR TESTBENCH basically 
 {
-    sc_signal<bool> Ssig;
-    sc_signal<bool> Rsig;
+    sc_signal<bool> Ssig; //with these signals,
+    sc_signal<bool> Rsig; //we connect to a testbench
     sc_signal<bool> Qsig;
     sc_signal<bool> Nsig;
 
-    rslatch rs;
+    rslatch rs; //instantiation of our sr latch yukarıda yaptığımız
     sc_time currentTime;
     unsigned long long currentDelta;
 
-    SC_CTOR(toplevel) : rs("rs")
+    SC_CTOR(toplevel) : rs("rs") //constructor
     {
-        SC_THREAD(process);
+        SC_THREAD(process); //inside constructor, we bind ports to signals
 
-        rs.S(Ssig);
+        rs.S(Ssig); //bind S to Ssig
         rs.R(Rsig);
         rs.Q(Qsig);
         rs.N(Nsig);
 
         std::cout << "\nS=0, R=1, Q=0, N=1\n" << std::endl;
-        Ssig.write(false);
+        Ssig.write(false); //just giving some values to the signals
         Rsig.write(true);
         Qsig.write(false);
         Nsig.write(true);
 
+        //these lines are just for debugging, to have an output and so on
         currentTime = SC_ZERO_TIME;
         currentDelta = sc_delta_count();
     }
@@ -106,7 +110,8 @@ SC_MODULE(toplevel)
                   << Nsig.read() << "\t" << std::endl;
     }
 
-    void process()
+    void process() //these processes just introduces some delta delays
+    //JUST A TRICK TO MAKE THEM VIISBLE
     {
         // Start in Reset State
         waitAndPrint(SC_ZERO_TIME);
@@ -139,14 +144,17 @@ SC_MODULE(toplevel)
     }
 };
 
+
+// in sc_main function, instantiate the test bench (which is top level),
+// then sc_start(), return 0 and that's it.
 int sc_main (int __attribute__((unused)) sc_argc,
              char __attribute__((unused)) *sc_argv[])
 {
     std::cout << "\nT\t\tS\tR\tQ\tN" << std::endl;
-    toplevel t("t");
+    toplevel t("t"); //instance of the toplevel
 
     sc_set_stop_mode(SC_STOP_FINISH_DELTA);
-    sc_start();
+    sc_start(); //run this
 
     return 0;
 }

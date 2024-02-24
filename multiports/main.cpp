@@ -39,6 +39,8 @@ using namespace std;
 
 SC_MODULE(module)
 {
+
+    //DYNAMIC PORT NUMBERS, many ports can be created
     sc_port<sc_fifo_out_if<int>,0,SC_ZERO_OR_MORE_BOUND> port;
 
     SC_CTOR(module)
@@ -72,6 +74,7 @@ SC_MODULE(module)
 
 };
 
+//JUST BIND how many ports you WANT TO CREATE
 int sc_main(int __attribute__((unused)) argc,
             char __attribute__((unused)) *argv[])
 {

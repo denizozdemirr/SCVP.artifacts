@@ -64,13 +64,14 @@ SC_MODULE(CONSUMER)
     {
         SC_METHOD(process);
         sensitive << slave;
-        dont_initialize();
+        dont_initialize(); //BECAUSE dont want to call this in the 
+        //beginnig of the simulation
     }
 
     void process()
     {
         int v = slave->read();
-        std::cout << v << std::endl;
+        std::cout << "@" << sc_time_stamp() <<  " C: " <<  v  << std::endl;
     }
 };
 
@@ -79,9 +80,9 @@ int sc_main(int __attribute__((unused)) argc,
 {
     PRODUCER pro1("pro1");
     CONSUMER con1("con1");
-    Signal<int> channel;
+    Signal<int> channel; //now use our custom Signal and call it channel
 
-    pro1.master.bind(channel);
+    pro1.master.bind(channel); // dont need an -> here
     con1.slave.bind(channel);
 
     sc_start(sc_time(100,SC_NS));

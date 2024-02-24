@@ -33,7 +33,7 @@
 
 #include <systemc.h>
 
-SC_MODULE(rslatch)
+SC_MODULE(rslatch) 
 {
     sc_in<bool> S;
     sc_in<bool> R;
@@ -60,7 +60,7 @@ SC_MODULE(rslatch)
     }
 };
 
-SC_MODULE(toplevel)
+SC_MODULE(toplevel) // for testbench, for simulation
 {
     sc_signal<bool> Ssig;
     sc_signal<bool> Rsig;

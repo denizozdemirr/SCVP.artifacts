@@ -71,7 +71,9 @@ SC_MODULE(module)
 int sc_main(int __attribute__((unused)) argc,
             char __attribute__((unused)) *argv[])
 {
-    module<3> m("m");
+
+    //STATIC => COMPONENT HAS only 3 PORTS, not dynamic
+    module<3> m("m"); //instantiation 
     sc_fifo<int> f1, f2, f3, f4;
 
     m.port[0].bind(f1);

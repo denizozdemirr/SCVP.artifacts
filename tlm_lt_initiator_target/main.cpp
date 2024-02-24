@@ -35,6 +35,8 @@
 #include <systemc.h>
 #include <tlm.h>
 
+//THE EXPLANATION OF THOSE ARE IN THE tlm_lt_initiator_interconnect
+// TLM COMPLETE or INCOMPLETE
 using namespace std;
 
 class exampleInitiator: sc_module, tlm::tlm_bw_transport_if<>

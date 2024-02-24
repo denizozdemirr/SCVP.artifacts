@@ -63,26 +63,29 @@ SC_MODULE(PRODUCER)
 
     void process()
     {
-        // Write:
+        // Write to memory
         for(unsigned int i=0; i < 4; i++)
         {
             wait(1,SC_NS);
             transaction trans;
             trans.addr = i;
             trans.data = rand();
+            //trans.data = i;
             trans.command = cmd::WRITE;
             master->transport(trans);
         }
 
-        // Read:
+        // Read from memory
         for(unsigned int i=0; i < 4; i++)
         {
             wait(1,SC_NS);
             transaction trans;
             trans.addr = i;
             trans.data = 0;
+            //trans.data = i;
             trans.command = cmd::READ;
             master->transport(trans);
+            //sc_assert(trans.data == i); 
             cout << trans.data << endl;
         }
     }
@@ -112,6 +115,7 @@ class CONSUMER : public sc_module, public transactionInterface
         {
             trans.data = memory[trans.addr];
         }
+        cout << "@" << sc_time_stamp() << " " << ((trans.command == WRITE) ? "WRITE" : "READ") <<endl;
     }
 };
 
